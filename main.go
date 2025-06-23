@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"social-todo-list/middleware"
 	ginitem "social-todo-list/modules/item/transport/gin"
 )
 
@@ -20,12 +21,14 @@ func main() {
 
 	r := gin.Default()
 
+	//r.Use(middleware.Recovery()) //Ap dung cho toan bo Gin
+
 	//CURD
-	v1 := r.Group("/v1")
+	v1 := r.Group("/v1", middleware.Recovery()) //Ap dung cho 1 Group
 	{
 		items := v1.Group("/items")
 		{
-			items.POST("", ginitem.CreateItem(db))
+			items.POST("", ginitem.CreateItem(db)) //Ap dung cho tung API
 			items.GET("", ginitem.ListItem(db))
 			items.GET("/:id", ginitem.GetItem(db))
 		}
