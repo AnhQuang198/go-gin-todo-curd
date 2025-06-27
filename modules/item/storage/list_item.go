@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"social-todo-list/common"
+	"social-todo-list/modules/item/entity"
 	"social-todo-list/modules/item/model"
 )
 
@@ -11,10 +12,12 @@ func (sql *sqlStore) ListItem(
 	filter *model.Filter,
 	paging *common.Pagging,
 	moreKeys ...string,
-) ([]model.TodoItem, error) {
-	var result []model.TodoItem
+) ([]*entity.TodoItem, error) {
+	var result []*entity.TodoItem
 
-	db := sql.db.Where("status <> ?", "Deleted")
+	db := sql.db.WithContext(ctx).Model(&entity.TodoItem{})
+
+	db = db.Where("status <> ?", "Deleted")
 
 	if f := filter; f != nil {
 		if v := f.Status; v != "" {
@@ -22,7 +25,7 @@ func (sql *sqlStore) ListItem(
 		}
 	}
 
-	if err := db.Table(model.TodoItem{}.TableName()).Count(&paging.Total).Error; err != nil {
+	if err := db.Count(&paging.Total).Error; err != nil {
 		return nil, err
 	}
 

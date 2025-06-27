@@ -1,7 +1,6 @@
-package model
+package enum
 
 import (
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"strings"
@@ -46,19 +45,19 @@ func (item *ItemStatus) Scan(value interface{}) error {
 	return nil
 }
 
-func (item *ItemStatus) Value() (driver.Value, error) {
-	if item == nil {
-		return nil, nil
-	}
-	return item.String(), nil
-}
-
-func (item *ItemStatus) MarshalJSON() ([]byte, error) {
-	if item == nil {
-		return nil, nil
-	}
-	return []byte(fmt.Sprintf("\"%s\"", item.String())), nil
-}
+//func (item *ItemStatus) Value() (driver.Value, error) {
+//	if item == nil {
+//		return nil, nil
+//	}
+//	return item.String(), nil
+//}
+//
+//func (item *ItemStatus) MarshalJSON() ([]byte, error) {
+//	if item == nil {
+//		return nil, nil
+//	}
+//	return []byte(fmt.Sprintf("\"%s\"", item.String())), nil
+//}
 
 func (item *ItemStatus) UnmarshalJSON(data []byte) error {
 	str := strings.ReplaceAll(string(data), "\"", "")
