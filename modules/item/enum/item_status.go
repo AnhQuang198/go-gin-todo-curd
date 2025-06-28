@@ -1,6 +1,7 @@
 package enum
 
 import (
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,8 +22,8 @@ func (item *ItemStatus) String() string {
 }
 
 func parseStrToItemStatus(s string) (ItemStatus, error) {
-	for i := range allItemStatus {
-		if allItemStatus[i] == s {
+	for i, v := range allItemStatus {
+		if v == s {
 			return ItemStatus(i), nil
 		}
 	}
@@ -30,13 +31,18 @@ func parseStrToItemStatus(s string) (ItemStatus, error) {
 }
 
 func (item *ItemStatus) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
+	var str string
 
-	if !ok {
-		return errors.New(fmt.Sprintf("fail to scan data from sql: %s", value))
+	switch v := value.(type) {
+	case string:
+		str = v
+	case []byte:
+		str = string(v)
+	default:
+		return fmt.Errorf("fail to scan data from sql: %v", value)
 	}
 
-	v, err := parseStrToItemStatus(string(bytes))
+	v, err := parseStrToItemStatus(str)
 	if err != nil {
 		return errors.New(fmt.Sprintf("fail to scan data from sql: %s", value))
 	}
@@ -45,19 +51,19 @@ func (item *ItemStatus) Scan(value interface{}) error {
 	return nil
 }
 
-//func (item *ItemStatus) Value() (driver.Value, error) {
-//	if item == nil {
-//		return nil, nil
-//	}
-//	return item.String(), nil
-//}
-//
-//func (item *ItemStatus) MarshalJSON() ([]byte, error) {
-//	if item == nil {
-//		return nil, nil
-//	}
-//	return []byte(fmt.Sprintf("\"%s\"", item.String())), nil
-//}
+func (item *ItemStatus) Value() (driver.Value, error) {
+	if item == nil {
+		return nil, nil
+	}
+	return item.String(), nil
+}
+
+func (item *ItemStatus) MarshalJSON() ([]byte, error) {
+	if item == nil {
+		return nil, nil
+	}
+	return []byte(fmt.Sprintf("\"%s\"", item.String())), nil
+}
 
 func (item *ItemStatus) UnmarshalJSON(data []byte) error {
 	str := strings.ReplaceAll(string(data), "\"", "")

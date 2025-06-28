@@ -4,6 +4,7 @@ import (
 	"context"
 	"social-todo-list/common"
 	"social-todo-list/modules/item/entity"
+	"social-todo-list/modules/item/enum"
 	"social-todo-list/modules/item/model"
 	"strings"
 )
@@ -28,6 +29,8 @@ func (business *createItemBusiness) CreateNewItem(ctx context.Context, req *mode
 	}
 
 	item := req.ToItemEntity()
+	status := enum.ItemStatusDoing
+	item.Status = &status
 	if err := business.store.CreateItem(ctx, item); err != nil {
 		return common.ErrCannotCreateEntity("Item", err)
 	}

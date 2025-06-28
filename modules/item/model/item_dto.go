@@ -7,12 +7,14 @@ import (
 )
 
 var (
-	ErrTitleIsBlank = errors.New("title cannot be blank")
+	ErrTitleIsBlank  = errors.New("title cannot be blank")
+	ErrStatusIsBlank = errors.New("status cannot be blank")
+	ErrItemDeleted   = errors.New("item is deleted")
 )
 
 type TodoItemRequest struct {
-	Id          int              `json:"-"`
-	Title       string           `json:"title" binding:"required"`
+	Id          int              `json:"id"`
+	Title       string           `json:"title"`
 	Description string           `json:"description"`
 	Status      *enum.ItemStatus `json:"status"`
 }
