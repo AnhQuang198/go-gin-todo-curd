@@ -2,11 +2,12 @@ package business
 
 import (
 	"context"
+	"social-todo-list/modules/item/entity"
 	"social-todo-list/modules/item/model"
 )
 
 type GetItemStorage interface {
-	GetItem(ctx context.Context, condition map[string]interface{}) (*model.TodoItem, error)
+	GetItem(ctx context.Context, condition map[string]interface{}) (*entity.TodoItem, error)
 }
 
 type getItemBusiness struct {
@@ -17,12 +18,13 @@ func NewGetItemBusiness(store GetItemStorage) *getItemBusiness {
 	return &getItemBusiness{store: store}
 }
 
-func (business *getItemBusiness) GetItemById(ctx context.Context, id int) (*model.TodoItem, error) {
+func (business *getItemBusiness) GetItemById(ctx context.Context, id int) (*model.TodoItemResponse, error) {
 	data, err := business.store.GetItem(ctx, map[string]interface{}{"id": id})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return data, nil
+	itemResponse := model.FromEntity(data)
+	return itemResponse, nil
 }

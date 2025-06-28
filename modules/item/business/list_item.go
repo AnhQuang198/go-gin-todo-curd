@@ -3,6 +3,7 @@ package business
 import (
 	"context"
 	"social-todo-list/common"
+	"social-todo-list/modules/item/entity"
 	"social-todo-list/modules/item/model"
 )
 
@@ -12,7 +13,7 @@ type ListItemStorage interface {
 		filter *model.Filter,
 		paging *common.Pagging,
 		moreKeys ...string,
-	) ([]model.TodoItem, error)
+	) ([]*entity.TodoItem, error)
 }
 
 type listItemBusiness struct {
@@ -27,10 +28,11 @@ func (business *listItemBusiness) ListItem(
 	ctx context.Context,
 	filter *model.Filter,
 	paging *common.Pagging,
-) ([]model.TodoItem, error) {
+) ([]model.TodoItemResponse, error) {
 	data, err := business.store.ListItem(ctx, filter, paging)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+
+	return model.FromEntityList(data), nil
 }
