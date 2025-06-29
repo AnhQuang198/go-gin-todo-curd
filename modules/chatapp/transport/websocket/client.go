@@ -1,10 +1,15 @@
-package model
+package websocket
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/coder/websocket"
+	"gorm.io/gorm"
 	"log"
+	"social-todo-list/modules/chatapp/business"
+	"social-todo-list/modules/chatapp/model"
+	"social-todo-list/modules/chatapp/storage"
 	"time"
 )
 
@@ -28,23 +33,22 @@ func NewClient(conn *websocket.Conn, roomId string, userId string, hub *Hub) *Cl
 }
 
 // Read nhận message từ client → broadcast
-func (c *Client) Read() {
+func (c *Client) Read(db *gorm.DB) {
 	defer func() {
 		c.hub.Leave(c.roomId, c)
 		c.conn.Close(websocket.StatusNormalClosure, "bye")
 	}()
 
-	ctx := context.Background()
-
 	for {
-		_, msg, err := c.conn.Read(ctx)
+		_, msg, err := c.conn.Read(context.Background())
 		if err != nil {
 			log.Println("read error:", err)
 			break
 		}
 
-		var incoming Message
+		var incoming model.MessageDTO
 		if err := json.Unmarshal(msg, &incoming); err != nil {
+			log.Println("invalid message:", err)
 			continue
 		}
 
@@ -52,6 +56,11 @@ func (c *Client) Read() {
 		encoded, _ := json.Marshal(incoming)
 
 		c.hub.Broadcast(c.roomId, string(encoded), c)
+
+		//TODO: save message to DB
+		store := storage.NewSQLStore(db)
+		service := business.NewCreateMessageBusiness(store)
+		service.CreateNewMessage(nil, c.roomId, c.userId, incoming.Content)
 	}
 }
 
@@ -59,8 +68,13 @@ func (c *Client) Read() {
 func (c *Client) Write() {
 	for msg := range c.send {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		_ = c.conn.Write(ctx, websocket.MessageText, []byte(msg))
+		err := c.conn.Write(ctx, websocket.MessageText, []byte(msg))
+		fmt.Println("Sending to:", c.userId, "msg:", msg)
 		cancel()
+		if err != nil {
+			log.Println("write error:", err)
+			break
+		}
 	}
 }
 

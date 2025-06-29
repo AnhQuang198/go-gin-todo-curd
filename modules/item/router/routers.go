@@ -5,12 +5,13 @@ import (
 	"gorm.io/gorm"
 	"social-todo-list/middleware"
 	"social-todo-list/modules/chatapp/transport"
+	"social-todo-list/modules/chatapp/transport/websocket"
 	ginitem "social-todo-list/modules/item/transport/gin"
 )
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-	r.Use(middleware.JWTAuthMiddleware()) //Ap dung authenJWT cho toan bo Gin
+	//r.Use(middleware.JWTAuthMiddleware()) //Ap dung authenJWT cho toan bo Gin
 
 	//CURD
 	v1 := r.Group("/v1", middleware.Recovery()) //Ap dung cho 1 Group
@@ -24,9 +25,10 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		}
 	}
 
+	hub := websocket.NewHub()
 	chat := r.Group("/chatapp")
 	{
-		chat.GET("/ws", transport.JoinRoom())
+		chat.GET("/ws", transport.JoinRoom(db, hub))
 	}
 
 	return r

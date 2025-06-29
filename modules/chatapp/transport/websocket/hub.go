@@ -1,6 +1,9 @@
-package model
+package websocket
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 type Hub struct {
 	rooms map[string]map[*Client]bool //roomId - list client
@@ -42,6 +45,8 @@ func (h *Hub) Broadcast(roomId string, msg string, sender *Client) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 
+	fmt.Println("Broadcasting message to room:", roomId)
+	fmt.Println("Message:", msg)
 	for client := range h.rooms[roomId] {
 		if client != sender {
 			client.Send(msg)

@@ -1,0 +1,22 @@
+# Binaries
+*.exe
+*.out
+*.test
+*.log
+
+# Go build
+/bin/
+/build/
+/dist/
+
+# IDE files
+.idea/
+
+# Dependency directories
+vendor/
+
+# sqlc generated
+db/models/
+
+# .env file, database secrets
+.env
